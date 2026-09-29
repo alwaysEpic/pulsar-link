@@ -40,8 +40,11 @@ jobs:
         with:
           persist-credentials: false
 
+      # With no name, rustup installs rust-toolchain.toml's pinned toolchain and components.
       - name: Install Rust
-        run: rustup toolchain install stable --profile minimal
+        run: |
+          rustup toolchain install
+          rustc --version | grep -F "rustc $(sed -n 's/^channel = "\(.*\)"/\1/p' rust-toolchain.toml) "
 
       - name: Install BlueZ headers
         run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
@@ -77,8 +80,9 @@ jobs:
 
       - name: Install Rust
         run: |
-          rustup toolchain install stable --profile minimal \
-            --target aarch64-apple-darwin --target x86_64-apple-darwin
+          rustup toolchain install
+          rustup target add aarch64-apple-darwin x86_64-apple-darwin
+          rustc --version | grep -F "rustc $(sed -n 's/^channel = "\(.*\)"/\1/p' rust-toolchain.toml) "
 
       - name: Build universal binary
         run: |

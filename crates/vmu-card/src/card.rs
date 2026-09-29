@@ -580,7 +580,7 @@ pub fn stale_blocks(cached: &Card, fresh: &Card) -> Result<Vec<u8>> {
     Ok(out)
 }
 
-fn le16(b: &[u8], at: usize) -> u16 {
+const fn le16(b: &[u8], at: usize) -> u16 {
     u16::from_le_bytes([b[at], b[at + 1]])
 }
 

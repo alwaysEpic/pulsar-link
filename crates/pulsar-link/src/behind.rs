@@ -65,7 +65,9 @@ impl Journal {
             truncate(&path, whole)?;
         }
         let entries = bytes
-            .chunks_exact(RECORD)
+            .as_chunks::<RECORD>()
+            .0
+            .iter()
             .map(|r| {
                 let mut data = [0; BLOCK_SIZE];
                 data.copy_from_slice(&r[1..]);

@@ -196,6 +196,10 @@ impl FakePulsar {
 }
 
 impl Link for FakePulsar {
+    #[expect(
+        clippy::unused_async_trait_impl,
+        reason = "a fake answers at once; the trait's async signature is what it stands in for"
+    )]
     async fn send(&mut self, bytes: &[u8]) -> Result<()> {
         match self.silent_after {
             Some(0) => {

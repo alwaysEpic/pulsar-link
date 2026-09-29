@@ -157,6 +157,10 @@ mod tests {
     struct Recorder(Arc<Mutex<Vec<(Instant, Frame)>>>);
 
     impl Screen for Recorder {
+        #[expect(
+            clippy::unused_async_trait_impl,
+            reason = "a recorder answers at once; the trait's async signature is what it stands in for"
+        )]
         async fn draw(&self, frame: &Frame) -> Result<()> {
             self.0.lock().unwrap().push((Instant::now(), *frame));
             Ok(())

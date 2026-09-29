@@ -95,8 +95,10 @@ impl SaveFile {
         let head = self.header()?;
         let h = self.header_bytes()?;
         let palette: Vec<[u8; 4]> = h[PALETTE_AT..ICONS_AT]
-            .chunks_exact(2)
-            .map(|c| argb4444(u16::from_le_bytes([c[0], c[1]])))
+            .as_chunks::<2>()
+            .0
+            .iter()
+            .map(|&c| argb4444(u16::from_le_bytes(c)))
             .collect();
         let frames = (0..usize::from(head.icon_frames.min(3)))
             .filter_map(|i| {

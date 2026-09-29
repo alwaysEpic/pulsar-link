@@ -25,8 +25,11 @@ jobs:
         with:
           persist-credentials: false
 
+      # With no name, rustup installs rust-toolchain.toml's pinned toolchain and components.
       - name: Install Rust
-        run: rustup toolchain install stable --profile minimal --component rustfmt,clippy
+        run: |
+          rustup toolchain install
+          rustc --version | grep -F "rustc $(sed -n 's/^channel = "\(.*\)"/\1/p' rust-toolchain.toml) "
 
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
