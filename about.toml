@@ -1,0 +1,51 @@
+# Third-party notices shipped with each release (scripts/notices.sh). A licence missing
+# from this list fails the release build rather than shipping a copy without its terms.
+accepted = [
+    "Apache-2.0",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "GPL-3.0-or-later",
+    "MIT",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "Unlicense",
+    "Zlib",
+]
+# Only what is built for a release; the notices name what the binary contains.
+targets = [
+    "aarch64-apple-darwin",
+    "x86_64-apple-darwin",
+    "aarch64-unknown-linux-gnu",
+    "x86_64-unknown-linux-gnu",
+]
+ignore-dev-dependencies = true
+ignore-build-dependencies = true
+
+# Crates published without a licence file: cargo-about would fill in the bare licence
+# template, "Copyright (c) <year> <owner>" and all. Each takes its upstream file instead,
+# checksummed, so a changed file fails the build rather than shipping unread.
+[chd.clarify]
+license = "BSD-3-Clause"
+git = [{ path = "LICENSE.md", checksum = "5e43cc088d55f3740675ae6cb74f1fb69c62958ff6c3ac043ae649281785e788" }]
+
+# The objc2 repo stated MIT without its text until the commit after these versions were
+# published; that commit's file is the upstream notice for them.
+[objc2.clarify]
+license = "MIT"
+override-git-commit = "ee9a7ada2131f5944b8750428e265c15632f2a19"
+git = [{ path = "LICENSE-MIT.txt", checksum = "f6a2e783669a0dd7a2c3b8a4f76db40ae49033e66e1bdc30f3aa25fe5577b070" }]
+
+[block2.clarify]
+license = "MIT"
+override-git-commit = "ee9a7ada2131f5944b8750428e265c15632f2a19"
+git = [{ path = "LICENSE-MIT.txt", checksum = "f6a2e783669a0dd7a2c3b8a4f76db40ae49033e66e1bdc30f3aa25fe5577b070" }]
+
+[objc2-encode.clarify]
+license = "MIT"
+override-git-commit = "ee9a7ada2131f5944b8750428e265c15632f2a19"
+git = [{ path = "LICENSE-MIT.txt", checksum = "f6a2e783669a0dd7a2c3b8a4f76db40ae49033e66e1bdc30f3aa25fe5577b070" }]
+
+[objc2-foundation.clarify]
+license = "MIT"
+override-git-commit = "ee9a7ada2131f5944b8750428e265c15632f2a19"
+git = [{ path = "LICENSE-MIT.txt", checksum = "f6a2e783669a0dd7a2c3b8a4f76db40ae49033e66e1bdc30f3aa25fe5577b070" }]

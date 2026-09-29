@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -22 770 146" role="img" aria-labelledby="title desc" color="#F7F3FA">
+  <title id="title">PULSAR wordmark</title>
+  <desc id="desc">The one-color Signal wordmark with open junctions and three forward over-slashes.</desc>
+  <g fill="currentColor" fill-rule="evenodd">
+    <path d="M0 120V0h14v120H0Z"/>
+    <path d="M24 0h56c26 0 40 13 40 34S106 68 80 68H24V53h54c17 0 26-7 26-19S95 15 78 15H24V0Z"/>
+    <path d="M22-22h40L51-10H11l11-12Z"/>
+    <path d="M142 0h15v66h-15V0Zm98 0h15v66h-15V0Zm-98 76h20c0 19 12 29 39 29 26 0 39-10 39-29h20c0 31-20 46-59 46-40 0-59-15-59-46Z"/>
+    <path d="M286 0h15v88h-15V0Zm0 102h98v18h-98v-18Z"/>
+    <path d="M422 0h91v15h-84c-16 0-24 7-24 20s8 20 24 20h47v15h-47c-26 0-40-12-40-35s11-35 33-35Z"/>
+    <path d="M417 55h49c28 0 42 11 42 33 0 21-14 32-42 32h-86v-16h82c18 0 27-5 27-16 0-12-9-18-27-18h-45V55Z"/>
+    <path d="M408-22h40l-11 12h-40l11-12Z"/>
+    <path d="M520 120 553 0h16l-31 120h-18Z"/>
+    <path d="M566 0h15l34 120h-18L566 0Z"/>
+    <path d="M538 70h52l4 16h-60l4-16Z"/>
+    <path d="M637 120V0h15v120h-15Z"/>
+    <path d="M662 0h57c27 0 41 12 41 34s-14 34-41 34h-57V53h54c18 0 27-6 27-19s-9-19-27-19h-54V0Zm29 68h21l56 52h-24l-53-52Z"/>
+    <path d="M660-22h40l-11 12h-40l11-12Z"/>
+  </g>
+</svg>

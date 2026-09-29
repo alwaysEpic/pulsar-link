@@ -1,0 +1,6 @@
+/target
+.DS_Store
+# Card images pulled from a real VMU during development hold someone's saves.
+*.bin
+*.vmu
+/THIRD-PARTY-NOTICES.txt

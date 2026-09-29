@@ -1,0 +1,37 @@
+[package]
+name = "pulsar-link"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+license.workspace = true
+description = "Background program: Flycast's VMU channel and a save manager for the VMU docked in a Pulsar."
+
+[dependencies]
+anyhow = "1.0.104"
+axum = "0.8.9"
+btleplug = "0.13.2"
+chrono = "0.4.45"
+clap = { version = "4.6.7", features = ["derive"] }
+# Reads the product number from a CHD disc image for Flycast's per-game VMU file (pure Rust,
+# BSD-3-Clause; what other emulators use).
+chd = "0.3.4"
+# A CDI is searched for its IP.BIN; `memmem` makes that a fast search, not a byte-wise one.
+memchr = "2.8.3"
+dirs = "7.0.0"
+futures = "0.3.34"
+# The VMU identity, function codes, block staging and the VMU's loading screens, which
+# the dongle draws too. GPL-3.0, as this program.
+maple-codec = { git = "https://github.com/alwaysEpic/pulsar-maple-bridge", tag = "v0.1.0" }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros", "time", "sync", "net", "io-util", "signal"] }
+uuid = "1.26.1"
+vmu-card = { path = "../vmu-card" }
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+tokio = { version = "1.53.1", features = ["test-util", "macros", "rt"] }
+tower = { version = "0.5.3", features = ["util"] }

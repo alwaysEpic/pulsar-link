@@ -1,0 +1,9 @@
+# Lint levels live in Cargo.toml ([workspace.lints]); this file holds the knobs.
+
+# In a test, a panic is the failure report.
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true
+allow-panic-in-tests = true
+
+# Names that appear in prose, not code.
+doc-valid-idents = ["..", "MapleLink", "DreamPotato", "Flycast", "RetroArch", "BlueZ", "CoreBluetooth", "KallistiOS", "DreamPicoPort"]

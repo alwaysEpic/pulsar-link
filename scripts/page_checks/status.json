@@ -1,0 +1,285 @@
+{
+ "phase": "ready",
+ "pulsar": "Xbox Wireless Controller (00000000-0000-0000-0000-000000000000)",
+ "flycast": false,
+ "pending": 257,
+ "destination": "vmu+local",
+ "at_login": true,
+ "flycast_linked": false,
+ "read": true,
+ "card": {
+  "saves": [
+   {
+    "name": "GAME_SAVE_00",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_01",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_02",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_03",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_04",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_05",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_06",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_07",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_08",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_09",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_10",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_11",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_12",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_13",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_14",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_15",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_16",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_17",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_18",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_19",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_20",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_21",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_22",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_23",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_24",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   },
+   {
+    "name": "GAME_SAVE_25",
+    "blocks": 6,
+    "date": "2026-09-28 19:26",
+    "game": false,
+    "vmu": "LONG VMU DESCRIPT",
+    "dc": "A long Dreamcast description of the save",
+    "icon_frames": 0,
+    "icon_speed": 0
+   }
+  ],
+  "free_blocks": 2,
+  "orphans": 12
+ },
+ "card_error": null,
+ "newer_here": [
+  {
+   "save": "CVS.S2___SYS",
+   "file": "/Users/player/Library/Application Support/Flycast/data/T1249M_vmu_save_A1.bin",
+   "here": "2026-09-29 05:07",
+   "card": "2026-09-28 19:26"
+  }
+ ]
+}

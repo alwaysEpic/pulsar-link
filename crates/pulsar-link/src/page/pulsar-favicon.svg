@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="PULSAR">
+  <style>.mark{fill:#7657ff}@media(prefers-color-scheme:dark){.mark{fill:#f7f3fa}}</style>
+  <path class="mark" fill-rule="evenodd" d="M48 56H208C227 56 236 65 236 84V172C236 191 227 200 208 200H48C29 200 20 191 20 172V84C20 65 29 56 48 56ZM58 82H198C206 82 210 86 210 94V162C210 170 206 174 198 174H58C50 174 46 170 46 162V94C46 86 50 82 58 82ZM132 56H170L150 82H112L132 56Z"/>
+</svg>

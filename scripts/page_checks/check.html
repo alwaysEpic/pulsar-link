@@ -1,0 +1,72 @@
+<!doctype html><meta charset="utf-8"><title>page checks</title>
+<!-- The local page's rendered checks, run by scripts/page_checks.sh. Each width is a frame of exactly that size: headless Chrome's own
+     window is 500 px at least, so a narrower --window-size only crops a wider layout. -->
+<body><pre id="out">running</pre><div id="frames"></div>
+<script>
+const SPACING = `* { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; } p { margin-bottom: 2em !important; }`;
+const cases = [
+  ...[320, 390, 768, 1024, 1440].map(w => ({ name: `width ${w}`, w })),
+  { name: "text spacing at 320", w: 320, css: SPACING },
+  { name: "200% text at 1280", w: 1280, css: "html { font-size: 200% !important; }" },
+];
+function lum(c) { const m = c.match(/[\d.]+/g).map(Number); const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(m[0]) + 0.7152 * f(m[1]) + 0.0722 * f(m[2]); }
+function bgOf(el, win) { for (let e = el; e; e = e.parentElement) { const b = win.getComputedStyle(e).backgroundColor; const a = b.match(/[\d.]+/g); if (a && (a.length < 4 || Number(a[3]) > 0.5)) return b; } return win.getComputedStyle(el.ownerDocument.body).backgroundColor; }
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let fixture;
+// The page drew the crowded status: Ready, one row per save, the newer-save list. Without
+// this a broken script or fetch would leave a near-empty page that passes every check.
+async function rendered(d) {
+  for (let i = 0; i < 100; i++) {
+    const phase = d.getElementById("phase");
+    const newer = d.getElementById("newer");
+    if (phase && phase.textContent.startsWith("Ready")
+        && d.querySelectorAll("#saves > li").length === fixture.card.saves.length
+        && newer && !newer.hidden
+        && d.querySelectorAll("#newer-list > li").length === fixture.newer_here.length) {
+      return true;
+    }
+    await sleep(100);
+  }
+  return false;
+}
+async function run(c) {
+  const f = document.createElement("iframe");
+  f.style.cssText = `width:${c.w}px;height:900px;border:0`;
+  f.src = "index.html";
+  document.getElementById("frames").append(f);
+  await new Promise(r => f.onload = r);
+  const d = f.contentDocument, win = f.contentWindow;
+  if (!(await rendered(d))) {
+    f.remove();
+    return `${c.name}: the fixture never rendered (no Ready, or not ${fixture.card.saves.length} saves and the newer list)`;
+  }
+  if (c.css) { const s = d.createElement("style"); s.textContent = c.css; d.head.append(s); await new Promise(r => setTimeout(r, 300)); }
+  const out = [];
+  const over = d.documentElement.scrollWidth - d.documentElement.clientWidth;
+  if (over > 0) out.push(`page overflows by ${over}px`);
+  const wide = [...d.querySelectorAll("main *")].filter(e => { const r = e.getBoundingClientRect(); return r.width && r.right > d.documentElement.clientWidth + 1; }).slice(0, 5).map(e => `${e.tagName.toLowerCase()}#${e.id}.${e.className}`);
+  if (wide.length) out.push(`past the right edge: ${wide.join(", ")}`);
+  // A choice label is the target for the input inside it, so the label is measured and
+  // that input is not. An input whose label is only for screen readers is its own target.
+  const covered = e => e.tagName === "INPUT" && e.closest("label:not(.visually-hidden)");
+  const small = [...d.querySelectorAll("button, a.btn, input[type=radio], input[type=checkbox], input[type=file], label.choice")].filter(e => { const r = e.getBoundingClientRect(); return r.width && r.height && (r.height < 44 || r.width < 44) && !covered(e); }).map(e => `${e.tagName.toLowerCase()}#${e.id} ${Math.round(e.getBoundingClientRect().width)}x${Math.round(e.getBoundingClientRect().height)}`);
+  if (small.length) out.push(`targets under 44px: ${[...new Set(small)].slice(0, 6).join(", ")}`);
+  const clipped = [...d.querySelectorAll("main *")].filter(e => !e.classList.contains("visually-hidden")).filter(e => { const s = win.getComputedStyle(e); return (s.overflow === "hidden" || s.overflowX === "hidden" || s.overflowY === "hidden") && (e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 1); }).slice(0, 5).map(e => `${e.tagName.toLowerCase()}#${e.id}.${e.className}`);
+  if (clipped.length) out.push(`clipped: ${clipped.join(", ")}`);
+  if (c.w === 1440 && !c.css) {
+    const low = new Map();
+    for (const e of d.querySelectorAll("main *")) {
+      if (!e.childNodes.length || ![...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) continue;
+      if (e.offsetParent === null) continue;
+      const s = win.getComputedStyle(e); const fg = s.color, bg = bgOf(e, win);
+      const [a, b] = [lum(fg), lum(bg)].sort((x, y) => y - x); const ratio = (a + 0.05) / (b + 0.05);
+      const large = parseFloat(s.fontSize) >= 24 || (parseFloat(s.fontSize) >= 18.66 && Number(s.fontWeight) >= 700);
+      if (ratio < (large ? 3 : 4.5)) low.set(`${e.tagName.toLowerCase()}#${e.id}.${e.className} ${ratio.toFixed(2)}`, 1);
+    }
+    if (low.size) out.push(`contrast below AA: ${[...low.keys()].slice(0, 8).join("; ")}`);
+  }
+  f.remove();
+  return `${c.name}: ${out.length ? out.join(" | ") : "ok"}`;
+}
+(async () => { fixture = await (await fetch("api/status")).json(); const lines = []; for (const c of cases) { const line = await run(c); lines.push(line); if (line.includes("never rendered")) break; } document.getElementById("out").textContent = lines.join("\n") + (lines.every(l => /: ok$|contrast: all text AA$/.test(l)) ? "\nPASS" : "\nFAIL"); })();
+</script>

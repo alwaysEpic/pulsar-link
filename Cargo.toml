@@ -1,0 +1,35 @@
+[workspace]
+resolver = "3"
+members = ["crates/vmu-card", "crates/pulsar-link"]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.97"
+publish = false
+license = "GPL-3.0-or-later"
+
+[workspace.lints.rust]
+# A host program has no reason to be unsafe; the BLE and TCP crates carry theirs.
+unsafe_code = "forbid"
+unused_must_use = "deny"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+
+# The escape hatch is `#[expect(lint, reason = "…")]`, never `#[allow]`, so a suppression
+# warns once it stops being needed.
+allow_attributes = "deny"
+allow_attributes_without_reason = "deny"
+
+# A panic here can end the program with saves acknowledged to Flycast but not yet
+# on the card. Errors are values. Tests are exempt through clippy.toml, which stops
+# these firing under #[cfg(test)] rather than suppressing them.
+#
+# `deny`, not `forbid`: clap's derive and #[tokio::main] expand to their own
+# `#[allow(clippy::expect_used)]`, which `forbid` rejects outright. `deny` still fails
+# the build on any of these in our code, and `allow_attributes` above still bans
+# writing an `#[allow]` by hand.
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"

@@ -1,0 +1,72 @@
+/* Pulsar's brand tokens, copied from the brand's own source: change them there, not here. */
+:root {
+  color-scheme: dark;
+
+  --space-base: #08060d;
+  --space-elevated: #110d19;
+  --text-primary: #f7f3fa;
+  --text-secondary: #a69dad;
+  --border-decorative: #30283a;
+
+  --agog-mark: #7657ff;
+  /* White text clears WCAG AA at 4.59:1; the former #8064ff reached only 4.05:1. */
+  --accent-interactive: #7657ff;
+  --accent-focus: #9a84ff;
+  --photon-lavender: #b9a7ff;
+  --photon-core: #ffffff;
+  --photon-ion: #8adfff;
+
+  --status-success: #5ee0a0;
+  --status-warning: #ffd166;
+  --status-error: #ff7b8b;
+  --status-info: #76c7ff;
+  --status-neutral: #a69dad;
+  --status-success-surface: #0e241a;
+  --status-warning-surface: #261f0f;
+  --status-error-surface: #2a1219;
+  --status-info-surface: #102033;
+
+  --font-interface: 'Instrument Sans Variable', 'Instrument Sans', sans-serif;
+  --font-brand-suffix: 'Manrope Variable', Manrope, sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  --text-12: 0.75rem;
+  --text-14: 0.875rem;
+  --text-16: 1rem;
+  --text-20: 1.25rem;
+  --text-32: 2rem;
+  --text-48: 3rem;
+  --leading-tight: 1.1;
+  --leading-heading: 1.2;
+  --leading-body: 1.5;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  --radius-control: 0.5rem;
+  --radius-panel: 0.75rem;
+  --radius-feature: 1.25rem;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 3px;
+
+  --motion-fast: 160ms;
+  --motion-standard: 240ms;
+  --motion-pulsar-cycle: 7200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-standard: 0ms;
+    --motion-pulsar-cycle: 0ms;
+  }
+}

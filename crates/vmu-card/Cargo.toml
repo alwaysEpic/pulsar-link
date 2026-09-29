@@ -1,0 +1,11 @@
+[package]
+name = "vmu-card"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+license.workspace = true
+description = "VMU card image: filesystem, save formats, safe write order. No I/O, so it can build for WASM."
+
+[lints]
+workspace = true

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- A private tool on this computer: never indexed, never followed. -->
+<meta name="robots" content="noindex, nofollow">
+<title>Pulsar VMU saves</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/tokens.css">
+<link rel="stylesheet" href="/app.css">
+<script src="/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the card</a>
+<main id="main" tabindex="-1">
+  <!-- The wordmark names the product; the heading stays real text beside it,
+       for search, translation and a reader that skips images. -->
+  <h1 class="title"><img class="wordmark" src="/pulsar-wordmark.svg" alt="Pulsar"
+       width="770" height="146"><span>VMU saves</span></h1>
+
+  <section aria-labelledby="now-h">
+    <h2 id="now-h" class="visually-hidden">What pulsar-link is doing</h2>
+    <div class="row">
+      <p id="phase" class="status neutral" role="status" aria-live="polite">Starting…</p>
+      <p id="pulsar" class="secondary"></p>
+    </div>
+    <div class="row">
+      <p id="flycast" class="secondary"></p>
+      <p id="pending"></p>
+    </div>
+    <p id="progress-row" hidden>
+      <progress id="progress" max="1" value="0" aria-labelledby="phase"></progress>
+    </p>
+    <p id="not-ready" class="warning" hidden>Wait before starting a game: one started now saves
+      to Flycast's own file, not the VMU.</p>
+    <div id="newer" class="stack" hidden>
+      <p class="warning">Newer in Flycast's own file than on the VMU. A game started before the
+        card was ready saves there instead. "Put on the VMU" replaces the card's older copy with
+        it; the whole card is kept on this computer first.</p>
+      <ul id="newer-list" class="plain"></ul>
+      <p id="newer-note" aria-live="polite"></p>
+    </div>
+    <div id="changed" class="stack" hidden>
+      <p id="changed-why" class="error" role="alert"></p>
+      <div class="row">
+        <button class="btn btn-secondary" id="retry" type="button">Read the card again</button>
+        <button class="btn btn-secondary" id="use-card" type="button">Use this card</button>
+      </div>
+      <p id="changed-note" class="secondary" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section aria-labelledby="setup-h">
+    <h2 id="setup-h">Setup</h2>
+    <div id="flycast-setup" class="stack" hidden>
+      <p id="flycast-link" class="secondary"></p>
+      <div class="row">
+        <button class="btn btn-secondary" id="link-flycast" type="button" hidden>Set up Flycast</button>
+      </div>
+    </div>
+    <label class="choice" id="at-login-row" hidden><input type="checkbox" id="at-login">
+      <span><strong>Start when I log in</strong>
+      <span class="secondary">pulsar-link runs in the background, so a game finds the VMU with
+      nothing to open first. Open pulsar-link again to come back to this page.</span></span></label>
+    <p id="setup-note" class="secondary" aria-live="polite"></p>
+  </section>
+
+  <section aria-labelledby="dest-h">
+    <h2 id="dest-h">Where Flycast's saves go</h2>
+    <fieldset>
+      <legend class="visually-hidden">Save destination</legend>
+      <label class="choice"><input type="radio" name="dest" value="vmu+local">
+        <span><strong>VMU and this computer</strong>
+        <span class="secondary">Saves go to the card, and each one is copied into Flycast's
+        own file too.</span></span></label>
+      <label class="choice"><input type="radio" name="dest" value="vmu">
+        <span><strong>VMU only</strong>
+        <span class="secondary">Flycast's own files are left as they are.</span></span></label>
+      <label class="choice"><input type="radio" name="dest" value="local">
+        <span><strong>This computer only</strong>
+        <span class="secondary">As without the Pulsar; the VMU still shows the game's
+        screen.</span></span></label>
+    </fieldset>
+    <p id="note" class="secondary" aria-live="polite">Flycast reads this when it starts.</p>
+  </section>
+
+  <section aria-labelledby="card-h">
+    <div class="row spread">
+      <h2 id="card-h">On the card</h2>
+      <div class="row">
+        <p id="free" class="secondary tabular"></p>
+        <a class="btn btn-secondary" id="backup" href="/api/backup" hidden>Download a backup</a>
+      </div>
+    </div>
+    <p id="locked" class="warning" hidden>Quit the game to change the card: a running game
+      holds its directory, and its next save would write over the change.</p>
+    <p id="cardmsg" class="secondary"></p>
+    <div id="orphans" class="row" hidden>
+      <p id="orphans-text" class="warning tabular"></p>
+      <button class="btn btn-secondary write" id="reclaim" type="button">Free them</button>
+    </div>
+    <ul id="saves" class="saves"></ul>
+    <p id="write-note" aria-live="polite"></p>
+  </section>
+
+  <section aria-labelledby="add-h">
+    <h2 id="add-h">Add saves</h2>
+    <p class="secondary">A <span class="name">.VMS</span> with its <span class="name">.VMI</span>,
+      a <span class="name">.DCI</span>, or a card image (<span class="name">.bin</span>, such as
+      Flycast's own VMU file) to pick saves from. Nothing on the card is replaced. With saves
+      going to the VMU and this computer, what you add is copied into Flycast's file too.</p>
+    <div class="row pick">
+      <label class="visually-hidden" for="add-files">Save files to add</label>
+      <input id="add-files" type="file" multiple accept=".vms,.vmi,.dci,.bin">
+      <button class="btn btn-secondary write" id="add" type="button">Add to the card</button>
+    </div>
+    <ul id="from-image" class="saves"></ul>
+    <p id="add-note" aria-live="polite"></p>
+  </section>
+
+  <section aria-labelledby="restore-h">
+    <h2 id="restore-h">Restore a backup</h2>
+    <p class="secondary">Replaces every save on the card with a card image. What is on the
+      card now is kept on this computer first. Flycast's own file only gains saves: nothing is
+      removed from it.</p>
+    <div class="row pick">
+      <label class="visually-hidden" for="restore-file">Card image to restore</label>
+      <input id="restore-file" type="file" accept=".bin">
+    </div>
+    <div id="restore-confirm" class="stack" hidden>
+      <p id="restore-what"></p>
+      <div class="row">
+        <button class="btn btn-danger write" id="restore" type="button">Replace everything on the card</button>
+        <button class="btn btn-secondary" id="restore-cancel" type="button">Keep the card as it is</button>
+      </div>
+    </div>
+    <p id="restore-note" aria-live="polite"></p>
+  </section>
+</main>
+</body>
+</html>

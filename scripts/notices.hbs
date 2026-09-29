@@ -1,0 +1,15 @@
+Pulsar Link includes the following third-party software, each under the licence shown.
+Pulsar Link itself is licensed under the GNU General Public License, version 3 or later:
+see LICENSE.
+{{#each licenses}}
+
+================================================================================
+{{{name}}}
+
+Used by:
+{{#each used_by}}
+  {{crate.name}} {{crate.version}}{{#if crate.repository}} ({{crate.repository}}){{/if}}
+{{/each}}
+
+{{{text}}}
+{{/each}}
