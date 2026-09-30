@@ -29,6 +29,8 @@
       <p id="flycast" class="secondary"></p>
       <p id="pending"></p>
     </div>
+    <p id="pending-why" class="secondary" hidden>They go on the VMU once the controller is left
+      alone for a second, so a save made mid-game waits for a pause.</p>
     <p id="progress-row" hidden>
       <progress id="progress" max="1" value="0" aria-labelledby="phase"></progress>
     </p>
@@ -63,6 +65,9 @@
       <span><strong>Start when I log in</strong>
       <span class="secondary">pulsar-link runs in the background, so a game finds the VMU with
       nothing to open first. Open pulsar-link again to come back to this page.</span></span></label>
+    <div class="row">
+      <button class="btn btn-secondary" id="stop" type="button">Stop pulsar-link</button>
+    </div>
     <p id="setup-note" class="secondary" aria-live="polite"></p>
   </section>
 

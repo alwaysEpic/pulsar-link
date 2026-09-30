@@ -1,6 +1,6 @@
 [package]
 name = "pulsar-link"
-version = "0.1.1"
+version = "0.1.2"
 edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
@@ -29,6 +29,10 @@ serde_json = "1.0.151"
 tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros", "time", "sync", "net", "io-util", "signal"] }
 uuid = "1.26.1"
 vmu-card = { path = "../vmu-card" }
+
+[build-dependencies]
+# Builds the icon into the Windows executables (build.rs); does nothing elsewhere.
+embed-resource = "3.0.11"
 
 [lints]
 workspace = true

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The app icon: Pulsar's mark in warm white on a near-black tile, on macOS's 1024 grid
+     (an 824 px tile, inset 100). The mark keeps an eighth of its artboard clear on every
+     side. scripts/app-icon.sh renders it into AppIcon.icns, and its tile alone into
+     pulsar-link.ico for Windows. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#110d19"/>
+      <stop offset="1" stop-color="#08060d"/>
+    </linearGradient>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#tile)"/>
+  <rect x="101" y="101" width="822" height="822" rx="184" fill="none" stroke="#30283a" stroke-width="2"/>
+  <path transform="translate(512 512) scale(2.943) translate(-128 -128)" fill="#f7f3fa" fill-rule="evenodd" d="M48 56H208C227 56 236 65 236 84V172C236 191 227 200 208 200H48C29 200 20 191 20 172V84C20 65 29 56 48 56ZM58 82H198C206 82 210 86 210 94V162C210 170 206 174 198 174H58C50 174 46 170 46 162V94C46 86 50 82 58 82ZM132 56H170L150 82H112L132 56Z"/>
+</svg>

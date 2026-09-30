@@ -77,7 +77,7 @@ pub struct Step {
 }
 
 impl Step {
-    fn run(argv: &[&str]) -> Self {
+    pub fn run(argv: &[&str]) -> Self {
         Self {
             argv: argv.iter().map(|&a| a.to_owned()).collect(),
             may_fail: false,
@@ -86,7 +86,7 @@ impl Step {
         }
     }
 
-    const fn may_fail(mut self) -> Self {
+    pub const fn may_fail(mut self) -> Self {
         self.may_fail = true;
         self
     }

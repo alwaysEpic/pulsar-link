@@ -47,10 +47,16 @@ function status(el, text, kind) {
 }
 
 function showPhase(s) {
+  // Just stopped, it still answers for a moment; after that, an answer means it was
+  // started again.
+  if (stoppedNote) {
+    if (Date.now() - stoppedAt < 3000) return;
+    stoppedNote = "";
+  }
   let text;
   let kind;
   switch (s.phase) {
-    case "ready": text = "Ready: Flycast is served the card"; kind = "success"; break;
+    case "ready": text = "Ready for Flycast"; kind = "success"; break;
     case "reading":
       kind = "warning";
       text = s.doing === "PUT PAD DOWN"
@@ -79,7 +85,7 @@ function showPhase(s) {
     // Set only when it changes: an alert re-announces on every write.
     if ($("changed-why").textContent !== s.why) $("changed-why").textContent = s.why;
     $("use-card").textContent = s.pending
-      ? `Set aside the ${s.pending} writes and use this card`
+      ? `Set aside the ${s.pending === 1 ? "write" : `${s.pending} writes`} and use this card`
       : "Use this card as it is";
   }
 }
@@ -202,6 +208,9 @@ function showSetup(s) {
   $("flycast-setup").hidden = false;
   $("at-login-row").hidden = s.at_login === null;
   if (!switching) $("at-login").checked = !!s.at_login;
+  // Stopping leaves the start-at-login switch as it is: unticked first, it stays stopped.
+  atLogin = s.at_login === true;
+  flycastOn = !!s.flycast;
 }
 
 // Saves newer in Flycast's own files than on the card: told, never moved.
@@ -239,10 +248,11 @@ async function refresh() {
     const r = await fetch("/api/status", { cache: "no-store" });
     s = await r.json();
   } catch {
-    // Offline: the page is loaded but pulsar-link is not answering.
-    const text = "pulsar-link is not running. Start it, and this page picks up again.";
+    // Offline: the page is loaded but pulsar-link is not answering. Stopped from here,
+    // that is what was asked for, and the page says how to start it again.
+    const text = stoppedNote || "pulsar-link is not running. Start it, and this page picks up again.";
     if (text !== lastPhase) {
-      status($("phase"), text, "error");
+      status($("phase"), text, stoppedNote ? "neutral" : "error");
       lastPhase = text;
     }
     return;
@@ -250,10 +260,13 @@ async function refresh() {
   showPhase(s);
   $("flycast").textContent = s.flycast ? "Flycast is connected" : "Flycast is not connected";
   const pending = $("pending");
+  const writes = s.pending === 1 ? "1 write" : `${s.pending} writes`;
   pending.textContent = !s.pending ? ""
-    : s.phase === "changed" ? `${s.pending} writes kept for the card they were made for`
-    : `${s.pending} writes on their way to the card`;
+    : s.phase === "changed" ? `${writes} kept for the card they were made for`
+    : `${writes} on the way to the card`;
   pending.className = s.pending ? "warning tabular" : "";
+  // The Pulsar writes its VMU only at pad idle, which nothing else on the page says.
+  $("pending-why").hidden = !s.pending || s.phase === "changed";
   if (!choosing) {
     for (const r of document.querySelectorAll('input[name="dest"]')) {
       r.checked = r.value === s.destination;
@@ -332,6 +345,30 @@ $("at-login").addEventListener("change", async (ev) => {
   switching = false;
   refresh();
 });
+
+let stoppedNote = "";
+let stoppedAt = 0;
+let atLogin = false;
+let flycastOn = false;
+
+async function stopIt() {
+  let ask = "Stop pulsar-link? The VMU stops showing the game's screen until it runs again.";
+  if (flycastOn) ask += "\n\nFlycast is connected: quit the game first, or its next save fails.";
+  if (!confirm(ask)) return;
+  const r = await send("/api/stop");
+  if (!r.ok) {
+    say($("setup-note"), r.text, false);
+    return;
+  }
+  stoppedNote = atLogin
+    ? "pulsar-link is stopped. It starts again the next time you log in, or when you open it."
+    : "pulsar-link is stopped. Open pulsar-link to start it again.";
+  stoppedAt = Date.now();
+  status($("phase"), stoppedNote, "neutral");
+  lastPhase = stoppedNote;
+}
+
+$("stop").addEventListener("click", stopIt);
 
 $("link-flycast").addEventListener("click", async () => {
   const r = await send("/api/flycast/link");

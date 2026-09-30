@@ -642,7 +642,14 @@ async fn session(
     start: Instant,
 ) -> Result<()> {
     let _claim = store::claim(dir)?;
-    let pulsar = connect(start, face).await;
+    // Stopped from the page, even while it waits for the Pulsar.
+    let pulsar = tokio::select! {
+        p = connect(start, face) => p,
+        () = face.board.stopped() => {
+            say(start, "stopped from the page");
+            return Ok(());
+        }
+    };
     let cache = store::cache_path(dir, &pulsar.id);
     let shared = Arc::new(Shared::new(Pending::open(cache.clone())?));
     let pending = shared.lock().journal.entries().len();
@@ -656,6 +663,10 @@ async fn session(
     let result = tokio::select! {
         r = serve_card(pulsar, bus, log, dir, &shared, face, start) => r,
         _ = tokio::signal::ctrl_c() => Ok(()),
+        () = face.board.stopped() => {
+            say(start, "stopped from the page");
+            Ok(())
+        }
     };
     let pending = shared.lock().journal.entries().len();
     if pending > 0 {
@@ -707,7 +718,7 @@ async fn serve_card(
         say(
             start,
             &format!(
-                "listening on {}; Flycast is served the docked card. Ctrl-C to stop",
+                "listening on {}; Flycast gets the docked card when it connects. Ctrl-C to stop",
                 port_name(bus)
             ),
         );

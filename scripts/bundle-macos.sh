@@ -29,6 +29,8 @@ cp "$BINARY" "$APP/Contents/MacOS/pulsar-link"
 # The licences travel with every copy. A signed build is one for others, so it must carry
 # the dependencies' notices too (scripts/notices.sh).
 cp LICENSE "$APP/Contents/Resources/"
+# Rendered from icon.svg by scripts/app-icon.sh; committed, so a release needs no renderer.
+cp crates/pulsar-link/icon/AppIcon.icns "$APP/Contents/Resources/"
 if [[ -f THIRD-PARTY-NOTICES.txt ]]; then
   cp THIRD-PARTY-NOTICES.txt "$APP/Contents/Resources/"
 elif [[ -n "${IDENTITY:-}" ]]; then
@@ -44,6 +46,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>CFBundleName</key><string>Pulsar Link</string>
   <key>CFBundleDisplayName</key><string>Pulsar Link</string>
   <key>CFBundleExecutable</key><string>pulsar-link</string>
+  <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleVersion</key><string>$VERSION</string>
   <key>CFBundleShortVersionString</key><string>$VERSION</string>

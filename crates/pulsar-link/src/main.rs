@@ -17,6 +17,8 @@ mod page;
 mod protocol;
 mod pull;
 mod push;
+#[cfg(target_os = "macos")]
+mod relocate;
 mod serve;
 mod server;
 mod settings;

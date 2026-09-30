@@ -10,6 +10,8 @@ computer, and a page in your browser backs up, restores, adds and exports the sa
 
 Install once, pair the controller as usual, play.
 
+![The save manager page: Ready, Flycast set up, start at login, where saves go, then the saves on the Pulsar's VMU, each with its game icon, name, size and date, and buttons to download it as VMS, VMI or DCI or remove it](docs/images/save-manager.png)
+
 > **Where to get Pulsar Link.** The only official source is this repository's
 > [Releases](https://github.com/alwaysEpic/pulsar-link/releases) page. Copies of Pulsar repos on
 > other GitHub accounts that offer a "download" have been found carrying malware. Don't run them.
@@ -38,8 +40,9 @@ Install once, pair the controller as usual, play.
 
 ## Requirements
 
-- A Pulsar controller with current firmware ([update here](https://pulsar.alwaysagog.com/update)),
-  paired with your computer, and a VMU docked in it
+- A [Pulsar](https://github.com/alwaysEpic/pulsar-dreamcast-ble) controller with current
+  firmware ([update here](https://pulsar.alwaysagog.com/update)), paired with your computer, and
+  a VMU docked in it
 - [Flycast](https://github.com/flyinghead/flycast) v2.7 or later (standalone)
 - macOS 11 or later, or Windows 10 or 11 (x86_64). Linux (BlueZ) builds and runs but is less
   tested; Batocera is coming.
@@ -61,9 +64,10 @@ It needs BlueZ and the D-Bus library, which any Linux desktop with Bluetooth alr
 
 1. Download `pulsar-link-linux-x86_64.tar.gz` (or `-aarch64`) from
    [Releases](https://github.com/alwaysEpic/pulsar-link/releases) and unpack it where it will
-   stay, such as `~/.local/share/pulsar-link`.
-2. Run `./pulsar-link`. It sets itself to start at login (a systemd user service) and opens
-   the page; choose **Set up Flycast** there.
+   stay, such as `~/.local/opt`, which gives a `pulsar-link` folder. Not
+   `~/.local/share/pulsar-link`: that is where it keeps your cards and backups.
+2. Run `./pulsar-link` in that folder. It sets itself to start at login (a systemd user
+   service) and opens the page; choose **Set up Flycast** there.
 
 ### Windows
 
@@ -97,9 +101,35 @@ whether to use the VMU.
 | **VMU only** | the VMU; Flycast's files are left as they are |
 | **This computer only** | Flycast's own files, as without a Pulsar; the VMU still shows the screen |
 
+Saves go on the VMU while the controller is left alone: the Pulsar writes to its VMU only once
+the pad has been still for about a second, so a save made mid-game waits for the next pause.
+Until then it is kept on this computer, through a quit or a crash, and the page counts it as on
+the way.
+
 A save made before the VMU was ready lands in Flycast's own file; the page lists it and puts it
-on the VMU in one click. `pulsar-link --help` lists the command-line tools, and
-`pulsar-link uninstall` stops it starting at login (your saves and backups are kept).
+on the VMU in one click. `pulsar-link --help` lists the command-line tools.
+
+## Stopping it
+
+- **Stop it now:** on the page, **Stop pulsar-link**. It starts again the next time you log
+  in, or when you open Pulsar Link.
+- **Stop it, and not at login:** untick **Start when I log in** on the page, then **Stop
+  pulsar-link**. Open Pulsar Link again any time to start it.
+- **Not at login, but running for now:** untick **Start when I log in** and leave it running
+  until you log out.
+- **Without the page:** run `uninstall`, which stops it and keeps it from starting at login.
+  - macOS, in Terminal: `"/Applications/Pulsar Link.app/Contents/MacOS/pulsar-link" uninstall`
+  - Windows, in Command Prompt: `"%LOCALAPPDATA%\Programs\pulsar-link\pulsar-link.exe" uninstall`
+    (or wherever you extracted it)
+  - Linux, in its folder: `./pulsar-link uninstall`
+- **Remove it entirely:** run `uninstall` first, then delete the program: on macOS, drag
+  **Pulsar Link** from Applications to the Trash; on Windows and Linux, delete the files you
+  extracted (`pulsar-link` or `pulsar-link.exe` and `pulsar-link-background.exe`, `README.md`,
+  `LICENSE`, `THIRD-PARTY-NOTICES.txt`). Your cards, backups and settings are kept apart, in
+  `~/Library/Application Support/pulsar-link` (macOS), `%APPDATA%\pulsar-link` (Windows) or
+  `~/.local/share/pulsar-link` (Linux). If you extracted the program into that same folder,
+  delete only its files there, not `cards`, `backups` or `settings.cfg`; delete the whole folder
+  only if you want your saves gone too.
 
 ## For Developers
 
@@ -132,6 +162,15 @@ from its tag:
 - **`pulsar-link-macos.dmg`** — the app for macOS (Apple silicon and Intel), signed and
   notarized
 - **`pulsar-link-linux-x86_64.tar.gz`**, **`pulsar-link-linux-aarch64.tar.gz`** — Linux
+- **`pulsar-link-windows-x86_64.zip`** — Windows, not yet code-signed
+
+## Related projects
+
+- **[Pulsar](https://github.com/alwaysEpic/pulsar-dreamcast-ble)** — the controller's firmware:
+  your Dreamcast controller as a Bluetooth gamepad, which also lends its VMU to Pulsar Link.
+- **[Pulsar Maple Bridge](https://github.com/alwaysEpic/pulsar-maple-bridge)** — the other
+  way round: the Pulsar on a real Dreamcast, through a Pico2Maple dongle, with the same VMU
+  screen and memory card.
 
 ## Contributing
 

@@ -72,8 +72,23 @@ pub async fn open() -> Result<()> {
 async fn open_here() -> Result<()> {
     let system = System::here();
     let exe = std::env::current_exe().context("where this program is")?;
-    if let Some(why) = cannot_start_from(&exe) {
-        bail!("{why}");
+    #[cfg(target_os = "macos")]
+    if let Some(home) = dirs::home_dir()
+        && let Some(from) = crate::relocate::downloaded(&exe, &home)
+    {
+        if crate::relocate::offer(&from) {
+            return crate::relocate::move_and_reopen(&from, &exe);
+        }
+        // Left where it is. The copy already running keeps its entry: pointed here, it
+        // would name a place gone after an eject or a restart.
+        if answers(page::PORT).await {
+            show(system);
+            return Ok(());
+        }
+        bail!(
+            "Move Pulsar Link into your Applications folder, then open it again. Opened from \
+             where it was downloaded, it cannot be started when you log in."
+        );
     }
     if answers(page::PORT).await {
         // The program may have been moved or updated since the entry was written: point
@@ -139,19 +154,6 @@ async fn serve_here(system: Option<System>, why: &str) -> Result<()> {
         }
     });
     served
-}
-
-/// Why the program cannot be set to start at login from `exe`, if it cannot. macOS runs
-/// an app opened from a download (still quarantined) from a random read-only copy
-/// ("App Translocation") that is gone after a restart, so an entry pointing there
-/// would silently never start.
-fn cannot_start_from(exe: &std::path::Path) -> Option<&'static str> {
-    exe.to_string_lossy()
-        .contains("/AppTranslocation/")
-        .then_some(
-            "Move Pulsar Link into your Applications folder, then open it again. Opened from \
-         where it was downloaded, it cannot be started when you log in.",
-        )
 }
 
 /// Say `msg` where the owner will see it: always as a line, and in a dialog on macOS,
@@ -225,17 +227,6 @@ mod tests {
             s.write_all(reply.as_bytes()).await.unwrap();
         });
         port
-    }
-
-    #[test]
-    fn a_translocated_app_is_not_set_to_start_at_login() {
-        let moved = std::path::Path::new(
-            "/private/var/folders/x/T/AppTranslocation/1F2E/d/Pulsar Link.app/Contents/MacOS/pulsar-link",
-        );
-        assert!(cannot_start_from(moved).is_some());
-        let installed =
-            std::path::Path::new("/Applications/Pulsar Link.app/Contents/MacOS/pulsar-link");
-        assert!(cannot_start_from(installed).is_none());
     }
 
     #[tokio::test]

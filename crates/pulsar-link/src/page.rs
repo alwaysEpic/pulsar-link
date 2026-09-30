@@ -84,6 +84,8 @@ pub struct Board {
     pub flycast: watch::Sender<bool>,
     /// What the owner chose for a changed card; `serve` waits on it.
     pub choice: watch::Sender<Option<Choice>>,
+    /// Set when the owner stops the program from the page; `serve` ends on it.
+    stop: watch::Sender<bool>,
     cards: PathBuf,
     /// Flycast's port this `serve` answers, for Flycast's link setting.
     bus: u8,
@@ -124,6 +126,7 @@ impl Board {
             }),
             flycast: watch::Sender::new(false),
             choice: watch::Sender::new(None),
+            stop: watch::Sender::new(false),
             cards,
             bus,
             login,
@@ -133,6 +136,14 @@ impl Board {
     fn view(&self) -> std::sync::MutexGuard<'_, View> {
         // Plain assignments only, so a poisoned lock holds nothing half-changed.
         self.view.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+
+    /// Returns once the owner has stopped the program from the page.
+    pub async fn stopped(&self) {
+        let mut asked = self.stop.subscribe();
+        if asked.wait_for(|s| *s).await.is_err() {
+            std::future::pending::<()>().await;
+        }
     }
 
     pub fn phase(&self, phase: Phase) {
@@ -232,6 +243,7 @@ fn app(board: Arc<Board>) -> Router {
         .route("/api/backup", get(backup))
         .route("/api/destination", axum::routing::post(set_destination))
         .route("/api/at-login", axum::routing::post(set_at_login))
+        .route("/api/stop", axum::routing::post(stop))
         .route("/api/flycast/link", axum::routing::post(link_flycast))
         .route("/api/changed/{choice}", axum::routing::post(choose))
         .layer(middleware::from_fn(guard))
@@ -570,6 +582,35 @@ struct AtLogin {
     on: bool,
 }
 
+/// Write the start-at-login entry and the setting that says so. Read first, so an
+/// unreadable file fails before anything changes; the entry before the setting, so the
+/// setting never says what the entry does not.
+fn write_at_login(board: &Board, on: bool) -> anyhow::Result<()> {
+    let Some(login) = &board.login else {
+        return Ok(());
+    };
+    let path = settings::path(&board.cards);
+    let mut s = Settings::load(&path)?;
+    login
+        .system
+        .install(&login.place, &login.exe, on)
+        .carry_out()?;
+    s.at_login = on;
+    s.save(&path)
+}
+
+/// Stop the program: the owner's way to end it, running in the background, with no
+/// terminal. The start-at-login entry is left as it is, so it starts again at the next
+/// login where that is set; a clean exit is one no OS restarts.
+async fn stop(State(board): State<Arc<Board>>) -> String {
+    tokio::spawn(async move {
+        // The answer goes out first: the page ends with the program.
+        tokio::time::sleep(std::time::Duration::from_millis(300)).await;
+        board.stop.send_replace(true);
+    });
+    "pulsar-link is stopping.".to_owned()
+}
+
 /// Start at login, or not. The entry is rewritten; the running `serve` is left alone.
 async fn set_at_login(
     State(board): State<Arc<Board>>,
@@ -582,22 +623,7 @@ async fn set_at_login(
         ));
     }
     let on = new.on;
-    blocking(move || {
-        let Some(login) = &board.login else {
-            return Ok(());
-        };
-        let path = settings::path(&board.cards);
-        // Read first, so an unreadable file fails before anything changes; the entry
-        // before the setting, so the setting never says what the entry does not.
-        let mut s = Settings::load(&path)?;
-        login
-            .system
-            .install(&login.place, &login.exe, on)
-            .carry_out()?;
-        s.at_login = on;
-        s.save(&path)
-    })
-    .await?;
+    blocking(move || write_at_login(&board, on)).await?;
     Ok(if on {
         "pulsar-link starts when you log in."
     } else {
@@ -1026,6 +1052,30 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn stop_answers_first_then_ends_serve() {
+        let board = Board::new(std::env::temp_dir().join("pulsar-link-page-stop"), 0, None);
+        let res = app(Arc::clone(&board))
+            .oneshot(post("/api/stop"))
+            .await
+            .unwrap();
+        assert_eq!(res.status(), StatusCode::OK);
+        assert!(!*board.stop.borrow());
+        tokio::time::timeout(std::time::Duration::from_secs(2), board.stopped())
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test]
+    async fn another_site_cannot_stop_it() {
+        let req = axum::http::Request::post("/api/stop")
+            .header(header::HOST, "localhost:37380")
+            .header(header::ORIGIN, "https://evil.example")
+            .body(Body::empty())
+            .unwrap();
+        assert_eq!(ask(req).await.status(), StatusCode::FORBIDDEN);
+    }
+
+    #[tokio::test]
     async fn a_choice_is_taken_only_while_the_card_waits_on_one() {
         let board = Board::new(
             std::env::temp_dir().join("pulsar-link-page-choice"),
@@ -1100,13 +1150,27 @@ mod tests {
 
     /// A board serving `card()` from a cache in its own directory, ready.
     fn ready(name: &str) -> (Arc<Board>, Arc<Shared>, PathBuf) {
+        ready_with(name, &card(), false)
+    }
+
+    /// `login`: a start-at-login switch that only writes a launchd file in this test's own
+    /// directory, so nothing is ever started.
+    fn ready_with(name: &str, card: &Card, login: bool) -> (Arc<Board>, Arc<Shared>, PathBuf) {
         let dir =
             std::env::temp_dir().join(format!("pulsar-link-page-{}-{name}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let cache = dir.join("pulsar.bin");
-        store::save_atomic(&cache, &card()).unwrap();
+        store::save_atomic(&cache, card).unwrap();
         let shared = Arc::new(Shared::new(Pending::open(cache).unwrap()));
-        let board = Board::new(dir.clone(), 0, None);
+        let login = login.then(|| Login {
+            system: System::Launchd,
+            place: Place {
+                home: dir.join("home"),
+                uid: "501".to_owned(),
+            },
+            exe: dir.join("pulsar-link"),
+        });
+        let board = Board::new(dir.clone(), 0, login);
         board.card(Arc::clone(&shared));
         board.phase(Phase::Ready);
         (board, shared, dir)
@@ -1452,18 +1516,31 @@ mod tests {
 
     /// Not a check: the page over a made-up card at `http://127.0.0.1:37380`, to look at
     /// in a browser with no Pulsar. `cargo test -p pulsar-link page_for_a_browser --
-    /// --ignored`, and stop it with Ctrl-C.
+    /// --ignored`, and stop it with Ctrl-C. `PAGE_CARD=<image>` shows a copy of that card
+    /// instead, as it is: the README's screenshot is taken this way.
     #[tokio::test]
     #[ignore = "serves until stopped"]
     async fn page_for_a_browser() {
-        let (board, shared, _dir) = ready("browser");
-        // Something for the reclaim row to show.
-        let writes = card().plan_import(&save("CUT", 2, 3), now()).unwrap();
-        shared
-            .lock()
-            .journal
-            .append_all(&writes[..writes.len() - 1])
-            .unwrap();
+        let board = std::env::var_os("PAGE_CARD").map_or_else(
+            || {
+                let (board, shared, _dir) = ready("browser");
+                // Something for the reclaim row to show.
+                let writes = card().plan_import(&save("CUT", 2, 3), now()).unwrap();
+                shared
+                    .lock()
+                    .journal
+                    .append_all(&writes[..writes.len() - 1])
+                    .unwrap();
+                board
+            },
+            |image| {
+                let real = store::load(std::path::Path::new(&image))
+                    .unwrap()
+                    .expect("no such card image");
+                // With the start-at-login switch, as the page shows it for real.
+                ready_with("browser", &real, true).0
+            },
+        );
         let l = tokio::net::TcpListener::bind((Ipv4Addr::LOCALHOST, PORT))
             .await
             .unwrap();
