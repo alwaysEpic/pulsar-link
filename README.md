@@ -87,6 +87,19 @@ The Windows build is **not code-signed** yet, so Windows warns before the first 
    on the VMU. On the page, choose **VMU only** under where saves go: copying saves into
    Flycast's own files is not supported on Windows yet.
 
+### Updating
+
+Open the new version: it takes over from the one running, unless a game is using it (quit the
+game first). The page shows which version is running, at the bottom.
+
+- **macOS:** open the new disk image and open Pulsar Link from it; choose **Replace** to move it
+  into Applications. Dragging it into Applications and choosing **Replace** works too.
+- **Linux:** unpack it over the old folder, then open it.
+- **Windows:** Windows cannot replace a program that is running, so either extract the new zip
+  into a new folder, open `pulsar-link.exe` there and delete the old folder afterwards; or stop
+  Pulsar Link first (**Stop pulsar-link** on its page from 0.1.2, or `pulsar-link.exe uninstall`
+  before that), then extract it over the old folder and open it.
+
 ## Using it
 
 The page lives at [http://127.0.0.1:37380](http://127.0.0.1:37380); open Pulsar Link again to

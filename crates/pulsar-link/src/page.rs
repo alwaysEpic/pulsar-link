@@ -338,6 +338,8 @@ struct CardInfo {
 
 #[derive(Serialize)]
 struct StatusInfo {
+    /// This program's version: opened again, a newer copy restarts an older one.
+    version: &'static str,
     #[serde(flatten)]
     phase: Phase,
     pulsar: Option<String>,
@@ -434,6 +436,7 @@ async fn status(State(board): State<Arc<Board>>) -> Json<StatusInfo> {
         Some(Err(e)) => (None, Some(format!("{e:#}"))),
     };
     Json(StatusInfo {
+        version: env!("CARGO_PKG_VERSION"),
         phase,
         pulsar,
         flycast: *board.flycast.borrow(),

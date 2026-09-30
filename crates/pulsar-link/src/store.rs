@@ -49,6 +49,23 @@ pub fn claim(dir: &Path) -> Result<std::fs::File> {
     }
 }
 
+/// Whether the claim on the cards in `dir` is free within `limit`. A `serve` holds it for
+/// its whole life and the OS lets go of it when the process ends, so this is how a
+/// stopped `serve` is known to be gone, whatever its page does. Waits, blocking.
+#[must_use]
+pub fn free_within(dir: &Path, limit: std::time::Duration) -> bool {
+    let until = std::time::Instant::now() + limit;
+    loop {
+        if claim(dir).is_ok() {
+            return true;
+        }
+        if std::time::Instant::now() >= until {
+            return false;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(250));
+    }
+}
+
 /// The cache file for one controller.
 #[must_use]
 pub fn cache_path(dir: &Path, controller: &str) -> PathBuf {

@@ -97,22 +97,24 @@ pub fn offer(from: &Downloaded) -> bool {
     } else {
         "Move to Applications"
     };
+    // The text, the button and the icon's path go in as data, never into the script: a
+    // folder's name can hold anything.
     let icon = from.app.join("Contents/Resources/AppIcon.icns");
-    let icon = if icon.exists() {
-        format!(
-            "with icon (POSIX file \"{}\")",
-            quote(&icon.to_string_lossy())
-        )
+    let with_icon = if icon.exists() {
+        "with icon (POSIX file (item 3 of argv))"
     } else {
-        "with icon note".to_owned()
+        "with icon note"
     };
     let script = format!(
-        "display dialog \"{}\" with title \"Pulsar Link\" buttons {{\"Not Now\", \"{go}\"}} \
-         default button \"{go}\" cancel button \"Not Now\" {icon}",
-        quote(&text)
+        "display dialog (item 1 of argv) with title \"Pulsar Link\" buttons {{\"Not Now\", \
+         item 2 of argv}} default button (item 2 of argv) cancel button \"Not Now\" \
+         {with_icon}"
     );
     Command::new("osascript")
-        .args(["-e", &script])
+        .args(["-e", "on run argv", "-e", &script, "-e", "end run"])
+        .arg(&text)
+        .arg(go)
+        .arg(&icon)
         .output()
         .is_ok_and(|o| o.status.success() && String::from_utf8_lossy(&o.stdout).contains(go))
 }
@@ -126,15 +128,21 @@ pub fn offer(from: &Downloaded) -> bool {
 /// cannot write to Applications). The copy that was there is started again first.
 pub fn move_and_reopen(from: &Downloaded, exe: &Path) -> Result<()> {
     let dest = destination(from);
+    let place = Place::here()?;
     // Stopped first: it may be the copy being replaced, and the new one could not claim
-    // the Pulsar beside it. Its entry is written again by the new copy.
-    System::Launchd
-        .uninstall(&Place::here()?, exe)
-        .carry_out()?;
+    // the Pulsar beside it. Its entry is kept, and the new copy writes it again. The
+    // caller has checked no game is using it.
+    System::Launchd.stop(&place, exe).carry_out()?;
+    // Gone for sure before its files are touched, and before the new copy looks.
+    if !crate::store::free_within(&crate::store::cache_dir()?, crate::setup::STOPPING) {
+        bail!(
+            "Pulsar Link is still running, outside its start-at-login entry. Stop it from its \
+             page, then open this one again."
+        );
+    }
     if let Err(e) = replace(&from.app, &dest) {
-        if dest.exists() {
-            let _ = plan(vec![Step::run(&["open", &dest.to_string_lossy()])]).carry_out();
-        }
+        // Started again as it was, through the entry it kept.
+        let _ = System::Launchd.start(&place, exe).carry_out();
         return Err(e).context(
             "Pulsar Link could not be moved into Applications. Drag it there yourself, then \
              open it from there",
@@ -252,11 +260,6 @@ fn plan(run: Vec<Step>) -> Plan {
         run,
         ..Plan::default()
     }
-}
-
-/// A string as `AppleScript` quotes it.
-fn quote(s: &str) -> String {
-    s.replace('\\', "\\\\").replace('"', "\\\"")
 }
 
 #[cfg(test)]

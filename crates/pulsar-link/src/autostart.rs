@@ -282,6 +282,26 @@ impl System {
         plan
     }
 
+    /// Stop `serve` and leave its entry: it starts again at the next login, or when it
+    /// is started. `exe` names the program where it is stopped by name (Windows). Not
+    /// running is not a failure.
+    #[must_use]
+    pub fn stop(self, place: &Place, exe: &Path) -> Plan {
+        let step = match self {
+            Self::Launchd => {
+                // Unloaded, not removed: launchd loads the plist again at the next login.
+                Step::run(&["launchctl", "bootout", &format!("gui/{}/{ID}", place.uid)])
+            }
+            Self::Systemd => Step::run(&["systemctl", "--user", "stop", "pulsar-link.service"]),
+            Self::Windows => kill_the_others(exe),
+            Self::Batocera => Step::run(&["batocera-services", "stop", BATOCERA_NAME]),
+        };
+        Plan {
+            run: vec![step.may_fail()],
+            ..Plan::default()
+        }
+    }
+
     /// Stop `serve` and remove the entry. The cards and settings are left alone. `exe`
     /// names the program where it is stopped by name (Windows).
     #[must_use]
@@ -309,22 +329,7 @@ impl System {
             Self::Windows => {
                 plan.run
                     .push(Step::run(&["reg", "delete", WINDOWS_RUN, "/v", ID, "/f"]).may_fail());
-                // No service manager holds it, so it is stopped by name: every copy but
-                // this one. None running is not a failure.
-                let name = exe
-                    .file_name()
-                    .map_or_else(|| "pulsar-link.exe".into(), |n| n.to_string_lossy());
-                plan.run.push(
-                    Step::run(&[
-                        "taskkill",
-                        "/F",
-                        "/FI",
-                        &format!("IMAGENAME eq {name}"),
-                        "/FI",
-                        &format!("PID ne {}", std::process::id()),
-                    ])
-                    .may_fail(),
-                );
+                plan.run.push(kill_the_others(exe));
             }
             Self::Batocera => {
                 plan.run
@@ -335,6 +340,23 @@ impl System {
         }
         plan
     }
+}
+
+/// No service manager holds it on Windows, so it is stopped by name: every copy but this
+/// one. None running is not a failure.
+fn kill_the_others(exe: &Path) -> Step {
+    let name = exe
+        .file_name()
+        .map_or_else(|| "pulsar-link.exe".into(), |n| n.to_string_lossy());
+    Step::run(&[
+        "taskkill",
+        "/F",
+        "/FI",
+        &format!("IMAGENAME eq {name}"),
+        "/FI",
+        &format!("PID ne {}", std::process::id()),
+    ])
+    .may_fail()
 }
 
 /// Keep `serve`'s log from growing without bound: when `out` (its stdout) is the log at
@@ -695,6 +717,28 @@ mod tests {
                 plan.run[0].may_fail,
                 "{sys:?}: stopping what is not running is fine"
             );
+        }
+    }
+
+    #[test]
+    fn stopping_keeps_the_entry_so_a_failed_stop_loses_nothing() {
+        for sys in [
+            System::Launchd,
+            System::Systemd,
+            System::Batocera,
+            System::Windows,
+        ] {
+            let plan = sys.stop(&place(), Path::new(EXE));
+            assert!(plan.remove.is_empty() && plan.write.is_empty(), "{sys:?}");
+            assert!(plan.run.iter().all(|s| s.may_fail), "{sys:?}");
+            let said = plan
+                .run
+                .iter()
+                .flat_map(|s| s.argv.clone())
+                .collect::<Vec<_>>();
+            for removes in ["disable", "delete", "remove"] {
+                assert!(!said.iter().any(|a| a == removes), "{sys:?}: {said:?}");
+            }
         }
     }
 

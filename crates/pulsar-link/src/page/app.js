@@ -210,6 +210,8 @@ function showSetup(s) {
   if (!switching) $("at-login").checked = !!s.at_login;
   // Stopping leaves the start-at-login switch as it is: unticked first, it stays stopped.
   atLogin = s.at_login === true;
+  // Which copy answers: after an update, the owner can see the new one took over.
+  $("version").textContent = s.version ? `pulsar-link ${s.version}` : "";
   flycastOn = !!s.flycast;
 }
 
