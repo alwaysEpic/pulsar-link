@@ -1,0 +1,3 @@
+# LF everywhere, Windows checkouts included: the bash scripts fail on CRLF, and CI reads
+# the pinned toolchain out of rust-toolchain.toml with sed.
+* text=auto eol=lf

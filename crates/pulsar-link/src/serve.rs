@@ -397,7 +397,8 @@ fn keep_log_small(start: Instant) {
     }
 }
 
-/// Windows has no log of the program's choosing yet (`autostart::System::log`).
+/// On Windows the launcher sets the log aside before `serve` starts writing it
+/// (`src/bin/pulsar-link-background.rs`).
 #[cfg(not(unix))]
 const fn keep_log_small(_: Instant) {}
 

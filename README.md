@@ -41,8 +41,8 @@ Install once, pair the controller as usual, play.
 - A Pulsar controller with current firmware ([update here](https://pulsar.alwaysagog.com/update)),
   paired with your computer, and a VMU docked in it
 - [Flycast](https://github.com/flyinghead/flycast) v2.7 or later (standalone)
-- macOS 11 or later. Linux (BlueZ) builds and runs but is less tested; Batocera and Windows
-  are coming.
+- macOS 11 or later, or Windows 10 or 11 (x86_64). Linux (BlueZ) builds and runs but is less
+  tested; Batocera is coming.
 
 ## Install
 
@@ -56,11 +56,32 @@ Install once, pair the controller as usual, play.
 
 ### Linux
 
+It needs BlueZ and the D-Bus library, which any Linux desktop with Bluetooth already has
+(`libdbus-1-3` on Debian and Ubuntu, `dbus-libs` on Fedora).
+
 1. Download `pulsar-link-linux-x86_64.tar.gz` (or `-aarch64`) from
    [Releases](https://github.com/alwaysEpic/pulsar-link/releases) and unpack it where it will
    stay, such as `~/.local/share/pulsar-link`.
 2. Run `./pulsar-link`. It sets itself to start at login (a systemd user service) and opens
    the page; choose **Set up Flycast** there.
+
+### Windows
+
+The Windows build is **not code-signed** yet, so Windows warns before the first run.
+
+1. Download `pulsar-link-windows-x86_64.zip` from
+   [Releases](https://github.com/alwaysEpic/pulsar-link/releases). Before unzipping, open the
+   zip's **Properties** and tick **Unblock**, so Windows does not stop the program that starts
+   it at login. Then extract it where it will stay, such as `%LOCALAPPDATA%\Programs`, which
+   gives a `pulsar-link` folder. Keep its files together: `pulsar-link-background.exe` is what
+   starts it at login without a window.
+2. Run `pulsar-link.exe`. If Windows says it protected your PC, choose **More info**, then
+   **Run anyway**. It sets itself to start at login and opens the page.
+3. Flycast on Windows keeps its settings beside `flycast.exe`, which Pulsar Link cannot find
+   yet, so set Flycast by hand, with Flycast's VMU in port A's first slot: **Settings →
+   Controls →** that slot → **DreamPotato**, and tick **Use Physical VMU Storage** for saves
+   on the VMU. On the page, choose **VMU only** under where saves go: copying saves into
+   Flycast's own files is not supported on Windows yet.
 
 ## Using it
 

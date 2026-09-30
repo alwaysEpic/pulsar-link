@@ -1,10 +1,11 @@
 [package]
 name = "pulsar-link"
-version = "0.1.0"
+version = "0.1.1"
 edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 license.workspace = true
+default-run = "pulsar-link"
 description = "Background program: Flycast's VMU channel and a save manager for the VMU docked in a Pulsar."
 
 [dependencies]

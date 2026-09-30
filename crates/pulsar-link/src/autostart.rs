@@ -5,9 +5,9 @@
 //! [`Plan`] (files to write, commands to run), so every backend is tested on any OS, and
 //! only [`Plan::carry_out`] touches the system.
 //!
-//! The entry always runs `pulsar-link serve`. The program is never copied: the entry
-//! points at the running executable, and is rewritten whenever the program is opened
-//! from somewhere else.
+//! The entry runs `pulsar-link serve`; on Windows, through the windowless launcher beside
+//! it ([`windows_launcher`]). The program is never copied: the entry points at the running
+//! executable, and is rewritten whenever the program is opened from somewhere else.
 
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -161,8 +161,11 @@ impl System {
         match self {
             Self::Launchd => Some(place.home.join("Library/Logs/pulsar-link/serve.log")),
             Self::Batocera => Some(PathBuf::from("/userdata/system/logs/pulsar-link.log")),
-            // The journal (`journalctl --user -u pulsar-link`); Windows: none yet.
-            Self::Systemd | Self::Windows => None,
+            // The launcher's choice (`src/bin/pulsar-link-background.rs`): under
+            // %LOCALAPPDATA%, which is this unless the profile is redirected.
+            Self::Windows => Some(place.home.join(r"AppData\Local\pulsar-link\serve.log")),
+            // The journal (`journalctl --user -u pulsar-link`).
+            Self::Systemd => None,
         }
     }
 
@@ -170,7 +173,6 @@ impl System {
     /// `serve`: the page calls this from inside one.
     #[must_use]
     pub fn install(self, place: &Place, exe: &Path, at_login: bool) -> Plan {
-        let exe_s = exe.display().to_string();
         let mut plan = Plan::default();
         match self {
             Self::Launchd => {
@@ -199,7 +201,7 @@ impl System {
             }
             Self::Windows => {
                 if at_login {
-                    let value = format!("\"{exe_s}\" serve");
+                    let value = format!("\"{}\" serve", windows_launcher(exe).display());
                     plan.run.push(Step::run(&[
                         "reg",
                         "add",
@@ -261,10 +263,13 @@ impl System {
                 "start",
                 "pulsar-link.service",
             ])),
-            // No service manager to go through; `serve` is left running on its own, with
-            // no console window (see `carry_out`).
+            // No service manager to go through; `serve` is left running on its own, through
+            // the launcher as at login, so it has no console window and writes its log.
             Self::Windows => plan.run.push(Step {
-                argv: vec![exe.display().to_string(), "serve".to_owned()],
+                argv: vec![
+                    windows_launcher(exe).display().to_string(),
+                    "serve".to_owned(),
+                ],
                 may_fail: false,
                 detach: true,
                 retry: false,
@@ -364,6 +369,16 @@ pub fn trim_log(path: &Path, out: &std::fs::File, limit: u64) -> Result<bool> {
 const RETRIES: usize = 10;
 
 const WINDOWS_RUN: &str = r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run";
+
+/// The windowless launcher shipped beside `pulsar-link.exe` (`src/bin/pulsar-link-background.rs`).
+const WINDOWS_LAUNCHER: &str = "pulsar-link-background.exe";
+
+/// What starts `serve` on Windows. A console program sits in a console window, and
+/// closing that window ends `serve`, so the entry names the windowless launcher beside
+/// `exe`, which the release zip always carries. It also keeps `serve`'s output in the log.
+fn windows_launcher(exe: &Path) -> PathBuf {
+    exe.with_file_name(WINDOWS_LAUNCHER)
+}
 
 /// XML's five escapes, for a path in a plist.
 fn xml(s: &str) -> String {
@@ -485,8 +500,8 @@ impl Plan {
                     .stdout(Stdio::null())
                     .stderr(Stdio::null());
                 // A console program started from a double-click would otherwise keep a
-                // console window, and closing it would stop `serve`. `serve` from the
-                // `Run` value at login still gets one: the Windows step's to solve.
+                // console window, and closing it would stop `serve`. `serve` itself goes
+                // through the launcher (`windows_launcher`); this covers any other.
                 #[cfg(windows)]
                 {
                     use std::os::windows::process::CommandExt as _;
@@ -555,10 +570,9 @@ mod tests {
         );
         assert!(f.text.contains("<key>RunAtLoad</key><true/>"));
         assert!(f.text.contains("<key>SuccessfulExit</key><false/>"));
-        assert!(
-            f.text
-                .contains("/Users/owner/Library/Logs/pulsar-link/serve.log")
-        );
+        // As the code joins it, so the test holds where `\` is also a separator.
+        let log = place().home.join("Library/Logs/pulsar-link/serve.log");
+        assert!(f.text.contains(&log.display().to_string()));
         // The running `serve` is the one asking: nothing is reloaded.
         assert!(on.run.is_empty());
 
@@ -579,14 +593,16 @@ mod tests {
     #[test]
     fn launchd_start_reloads_the_entry_then_starts_it() {
         let plan = System::Launchd.start(&place(), Path::new(EXE));
+        let entry = System::Launchd.entry(&place()).unwrap();
         assert_eq!(
             argv(&plan),
             [
-                "launchctl bootout gui/501/com.alwaysepic.pulsar-link",
-                "launchctl bootstrap gui/501 /Users/owner/Library/LaunchAgents/com.alwaysepic.pulsar-link.plist",
-                "launchctl kickstart gui/501/com.alwaysepic.pulsar-link",
+                "launchctl bootout gui/501/com.alwaysepic.pulsar-link".to_owned(),
+                format!("launchctl bootstrap gui/501 {}", entry.display()),
+                "launchctl kickstart gui/501/com.alwaysepic.pulsar-link".to_owned(),
             ]
         );
+        assert!(entry.ends_with("Library/LaunchAgents/com.alwaysepic.pulsar-link.plist"));
         assert!(plan.run[0].may_fail && !plan.run[1].may_fail);
         assert!(plan.run[1].retry, "bootstrap may race the bootout");
     }
@@ -619,20 +635,23 @@ mod tests {
     }
 
     #[test]
-    fn windows_uses_the_user_s_run_key() {
-        let exe = Path::new(r"C:\Users\owner\pulsar-link.exe");
-        let on = System::Windows.install(&place(), exe, true);
+    fn windows_starts_serve_through_the_launcher() {
+        // Joined, not written out: `\` is a separator on Windows only.
+        let exe = Path::new("C:/Users/owner").join("pulsar-link.exe");
+        let launcher = Path::new("C:/Users/owner").join(WINDOWS_LAUNCHER);
+        let on = System::Windows.install(&place(), &exe, true);
         assert!(on.write.is_empty());
         assert_eq!(on.run[0].argv[..3], ["reg", "add", WINDOWS_RUN]);
-        assert!(
-            on.run[0]
-                .argv
-                .contains(&r#""C:\Users\owner\pulsar-link.exe" serve"#.to_owned())
-        );
-        let off = System::Windows.install(&place(), exe, false);
+        let after_d = on.run[0].argv.iter().skip_while(|a| *a != "/d").nth(1);
+        assert_eq!(after_d, Some(&format!("\"{}\" serve", launcher.display())));
+        let off = System::Windows.install(&place(), &exe, false);
         assert!(off.run[0].may_fail && off.run[0].argv[1] == "delete");
-        let start = System::Windows.start(&place(), exe);
+        let start = System::Windows.start(&place(), &exe);
         assert!(start.run[0].detach);
+        assert_eq!(
+            start.run[0].argv,
+            [launcher.display().to_string(), "serve".to_owned()]
+        );
     }
 
     #[test]
@@ -741,14 +760,20 @@ mod tests {
         };
         assert!(gone.carry_out().unwrap());
         assert!(!path.exists());
+        // A command that runs and exits non-zero; Windows has no `false`.
+        let fails: &[&str] = if cfg!(windows) {
+            &["cmd", "/C", "exit 1"]
+        } else {
+            &["false"]
+        };
         let failing = Plan {
-            run: vec![Step::run(&["false"])],
+            run: vec![Step::run(fails)],
             ..Plan::default()
         };
         assert!(failing.carry_out().is_err());
         assert!(
             !Plan {
-                run: vec![Step::run(&["false"]).may_fail()],
+                run: vec![Step::run(fails).may_fail()],
                 ..Plan::default()
             }
             .carry_out()
