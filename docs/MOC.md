@@ -9,5 +9,8 @@ rather than preloading the folder.
 
 ## Using pulsar-link
 
-Install and first-launch notes arrive with the first release; the [README](../README.md)
-says what the program does.
+The [README](../README.md) says what the program does and covers install on macOS, Linux and
+Windows.
+
+- [`batocera.md`](batocera.md) — running pulsar-link on Batocera: needs Batocera 44+ (Flycast
+  v2.7), the archive in `/userdata/system`, four `batocera.conf` lines, the save manager over SSH

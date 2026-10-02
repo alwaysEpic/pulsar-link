@@ -45,7 +45,7 @@ Install once, pair the controller as usual, play.
   a VMU docked in it
 - [Flycast](https://github.com/flyinghead/flycast) v2.7 or later (standalone)
 - macOS 11 or later, or Windows 10 or 11 (x86_64). Linux (BlueZ) builds and runs but is less
-  tested; Batocera is coming.
+  tested. Batocera 44 or later: see [Running on Batocera](docs/batocera.md).
 
 ## Install
 
